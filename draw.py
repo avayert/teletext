@@ -6,14 +6,13 @@ import sys
 with open('output.json') as f:
     data = json.load(f)
 
-lines = data['teletext']['page']['subpage'][0]['content'][1]['line']
-lines = [line.get('Text', ' ' * 40) for line in lines]
+lines = data['teletext']['page']['subpage'][1]['content'][1]['line']
+lines = [line['Text'] for line in lines if 'Text' in line]
 
 foreground = '\x1B[3{}m'.format
 background = '\x1B[4{}m'.format
-
-reset = lambda: sys.stdout.write(foreground(9) + background(9) + '\n')
-
+blink = '\x1B[5m'
+noblink = '\x1B[25m'
 
 # While for the most part teletext corresponds to ASCII pretty OK, there are
 # a few spots where they differ. The YLE teletext API seems to send all alpha-
@@ -97,6 +96,10 @@ for line in lines:
             # and turn it back into a string
             mode = ''.join(tokens)
 
+            # TODO: is this correct? it seems to be? Do I need this behaviour for _all_ formatting?
+            if mode != 'Flash':
+                sys.stdout.write(noblink)
+
             if mode in graphics_colours:
                 graphics_mode = True
                 mode = mode.removeprefix('G')
@@ -134,6 +137,18 @@ for line in lines:
                 # a custom font just for this.
                 pass
 
+            elif mode == 'NH':
+                # Since double height doesn't work, this is a noop
+                pass
+
+            elif mode == 'SB':
+                # for SB we don't need to do anything.
+                pass
+
+            elif mode == 'Flash':
+                sys.stdout.write(blink)
+
+            # TODO: this path shouldn't be hit, all of the modes are documented, I'm just lazy
             else:
                 sys.stdout.write(foreground(9) + background(9) + '\n')
                 print('Found unknown mode:', mode)
@@ -162,6 +177,6 @@ for line in lines:
     #
     # This resets to white text on black background since that's what teletext
     # displays as out of the box.
-    sys.stdout.write(foreground(7) + background(0) + '\n')
+    sys.stdout.write(foreground(7) + background(0) + noblink + '\n')
 
 sys.stdout.write(foreground(9) + background(9) + '\n')
