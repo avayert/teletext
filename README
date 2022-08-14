@@ -1,0 +1,10 @@
+teletext
+========
+
+This is a hobby project I worked on as I saw the Finnish Broadcasting Company
+(YLE) had a public-facing teletext API. It is incomplete, as it does not
+currently fetch data real-time, but rather is only the drawing logic.
+
+I ran into issues with terminal features regarding double height/width text,
+and blinks, which made me want to rewrite the project as a fully-fledged GUI.
+
